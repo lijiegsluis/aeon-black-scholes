@@ -24,27 +24,8 @@ import os
 # ---------------------------------------------------------------------------
 
 def norm_cdf(x: float) -> float:
-    """
-    Cumulative normal distribution via Abramowitz & Stegun approximation.
-    Maximum absolute error: 1.5e-7.
-
-    Constants from AS 26.2.17:
-        a1=0.254829592, a2=-0.284496736, a3=1.421413741,
-        a4=-1.453152027, a5=1.061405429, p=0.3275911
-    """
-    a1 =  0.254829592
-    a2 = -0.284496736
-    a3 =  1.421413741
-    a4 = -1.453152027
-    a5 =  1.061405429
-    p  =  0.3275911
-
-    sign = 1.0 if x >= 0.0 else -1.0
-    x = abs(x)
-    t = 1.0 / (1.0 + p * x)
-    poly = (a1 + t * (a2 + t * (a3 + t * (a4 + t * a5)))) * t
-    approx = 1.0 - poly * math.exp(-0.5 * x * x)
-    return 0.5 * (1.0 + sign * approx)
+    """Standard normal CDF: N(x) = 0.5 * (1 + erf(x / sqrt(2)))."""
+    return 0.5 * (1.0 + math.erf(x / math.sqrt(2.0)))
 
 
 def norm_pdf(x: float) -> float:
@@ -203,6 +184,10 @@ def run_black_scholes():
 
     otype_raw = input("  Option type (call/put)     [  call]: ").strip().lower()
     otype = otype_raw if otype_raw in ("call", "put") else "call"
+
+    if min(S, K, T, sigma) <= 0:
+        print("\n  [!] Spot, strike, time to expiry and volatility must all be positive.")
+        return
 
     # --- Price ---
     if otype == "call":
